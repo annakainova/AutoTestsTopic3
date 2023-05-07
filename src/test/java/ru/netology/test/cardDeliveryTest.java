@@ -1,19 +1,15 @@
 package ru.netology.test;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
-import org.junit.jupiter.api.Assertions;
+import com.codeborne.selenide.ElementsCollection;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.support.Color;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
-import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 public class cardDeliveryTest {
@@ -32,7 +28,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormSuccessfulTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -46,7 +41,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormCityNotFromListTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Рыбинск");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -60,7 +54,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormEmptyCityTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
         $("[data-test-id='date'] input").setValue(getDate(4));
@@ -73,7 +66,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormEmptyDateTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -86,7 +78,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormDateEarlierThan3DaysTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -100,7 +91,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormEmptyNameTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -113,7 +103,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormLatinInNameTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -127,7 +116,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormEmptyPhoneTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -140,7 +128,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormTooMuchSymbolsPhoneTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -154,7 +141,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormNotEnoughSymbolsPhoneTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -168,7 +154,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormWithoutPlusSymbolsPhoneTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -182,7 +167,6 @@ public class cardDeliveryTest {
 
     @Test
     public void sendFormEmptyCheckBoxTest() {
-        Configuration.holdBrowserOpen = true;
         open("http://localhost:9999/");
         $("[data-test-id='city'] input").setValue("Нижний Новгород");
         $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
@@ -190,9 +174,82 @@ public class cardDeliveryTest {
         $("[data-test-id='name'] input").setValue("Иван Петров-Иванов");
         $("[data-test-id='phone'] input").setValue("+79012345678");
         $(".button__text").click();
-        String color = $x("//label[@data-test-id='agreement']//span[@class='checkbox__text']").getCssValue("color");
-        String actual = Color.fromString(color).asHex();
-        Assertions.assertEquals("#ff5c5c", actual);
+        $("[data-test-id='agreement'].input_invalid").shouldBe(enabled);
+        $x("//div[contains(text(), 'Успешно!')]").shouldNot(appear, Duration.ofSeconds(15));
     }
 
+    @Test
+    public void sendFormAutoFillingForCityTest() {
+        open("http://localhost:9999/");
+
+        $("[data-test-id='city'] input").sendKeys("Ка");
+        ElementsCollection col = $$("div.menu-item");
+        col.get(5).click();
+
+        $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
+        $("[data-test-id='date'] input").setValue(getDate(4));
+        $("[data-test-id='name'] input").setValue("Иван Петров-Иванов");
+        $("[data-test-id='phone'] input").setValue("+79012345678");
+        $("[data-test-id='agreement']").click();
+        $(".button__text").click();
+        $x("//div[contains(text(), 'Успешно!')]").should(appear, Duration.ofSeconds(15));
+    }
+
+    @Test
+    public void sendFormAutoFillingForDateTest() {
+        open("http://localhost:9999/");
+
+        $("[data-test-id='city'] input").setValue("Нижний Новгород");
+        $("[data-test-id='date'] input").sendKeys(Keys.CONTROL,"a",Keys.DELETE);
+
+        //get month and year from calendar
+        String monthYearFromCalendar = $("div.calendar__name").getText();
+        String [] monthYear = monthYearFromCalendar.split(" ");
+        //get day from calendar
+        String day = $("td.calendar__day_state_today").getText();
+
+        HashMap<String, Integer> months = new HashMap<>();
+        months.put("Январь", 0);
+        months.put("Февраль", 1);
+        months.put("Март", 2);
+        months.put("Апрель", 3);
+        months.put("Май", 4);
+        months.put("Июнь", 5);
+        months.put("Июль", 6);
+        months.put("Август", 7);
+        months.put("Сентябрь", 8);
+        months.put("Октябрь", 9);
+        months.put("Ноябрь", 10);
+        months.put("Декабрь", 11);
+
+        //set the today date in Calendar
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date(Integer.parseInt(monthYear[1]) - 1900, months.get(monthYear[0]), Integer.parseInt(day))); // Using today's date
+        c.add(Calendar.DATE, 7); // Adding 7 days
+        String oneWeekAfterToday = Long.toString(c.getTimeInMillis());
+
+        //check if a week will be in this month or next
+        if (!(c.getTime().getMonth() == months.get(monthYear[0]))) {
+            //switch on next month
+            $("div.calendar__arrow_direction_right[data-step='1']").click();
+        }
+
+        ElementsCollection col = $$("td.calendar__day"); //find all days
+        //try to find day 7 day after today
+        for(int i = 0; i < col.size(); i++) {
+            String dayFromCalendar = col.get(i).getAttribute("data-day");
+
+            if (dayFromCalendar != null) {
+                if (dayFromCalendar.equals(oneWeekAfterToday)) {
+                    col.get(i).click();
+                }
+            }
+        }
+
+        $("[data-test-id='name'] input").setValue("Иван Петров-Иванов");
+        $("[data-test-id='phone'] input").setValue("+79012345678");
+        $("[data-test-id='agreement']").click();
+        $(".button__text").click();
+        $x("//div[contains(text(), 'Успешно!')]").should(appear, Duration.ofSeconds(15));
+    }
 }
